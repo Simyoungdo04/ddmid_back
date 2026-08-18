@@ -1,0 +1,31 @@
+package com.example.back.controller;
+
+import com.example.back.dto.RestaurantDto;
+import com.example.back.service.KakaoRestaurantService;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+@RestController
+public class RestaurantController {
+
+	private final KakaoRestaurantService kakaoRestaurantService;
+
+	public RestaurantController(KakaoRestaurantService kakaoRestaurantService) {
+		this.kakaoRestaurantService = kakaoRestaurantService;
+	}
+
+	@GetMapping("/api/restaurants")
+	public List<RestaurantDto> nearbyRestaurants(@RequestParam double x, @RequestParam double y) {
+		return kakaoRestaurantService.findNearbyRestaurants(x, y);
+	}
+
+	@GetMapping("/api/restaurants/search")
+	public List<RestaurantDto> searchRestaurantsByName(
+			@RequestParam String query, @RequestParam double x, @RequestParam double y
+	) {
+		return kakaoRestaurantService.searchByName(query, x, y);
+	}
+}

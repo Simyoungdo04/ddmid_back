@@ -1,0 +1,8 @@
+server:
+  port: 8080
+
+kakao:
+  rest-api-key: ${KAKAO_REST_API_KEY}
+
+odsay:
+  api-key: ${ODSAY_API_KEY}
