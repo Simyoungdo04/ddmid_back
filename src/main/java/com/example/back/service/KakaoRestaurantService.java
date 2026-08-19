@@ -2,7 +2,7 @@ package com.example.back.service;
 
 import com.example.back.dto.NearbyStationDto;
 import com.example.back.dto.RestaurantDto;
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;

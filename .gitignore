@@ -4,3 +4,8 @@ build/
 .env
 *.iml
 .idea/
+.project
+.classpath
+.settings/
+.metadata/
+bin/

@@ -1,7 +1,7 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '3.3.4'
-	id 'io.spring.dependency-management' version '1.1.6'
+	id 'org.springframework.boot' version '4.0.7'
+	id 'io.spring.dependency-management' version '1.1.7'
 }
 
 group = 'com.example'
@@ -19,8 +19,8 @@ repositories {
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-	// back/.env 파일을 자동으로 읽어서 Spring 프로퍼티로 넣어줌
-	implementation 'me.paulschwarz:spring-dotenv:4.0.0'
+	// back/.env 파일을 자동으로 읽어서 Spring 프로퍼티로 넣어줌 (Spring Boot 4 전용 아티팩트)
+	implementation 'me.paulschwarz:springboot4-dotenv:5.1.0'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
