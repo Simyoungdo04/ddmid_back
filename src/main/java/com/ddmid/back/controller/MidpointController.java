@@ -1,14 +1,14 @@
-package com.example.back.controller;
+package com.ddmid.back.controller;
 
-import com.example.back.dto.MidpointCandidatesDto;
-import com.example.back.dto.MidpointOptionDto;
-import com.example.back.dto.MidpointResultDto;
-import com.example.back.dto.MultiMidpointResultDto;
-import com.example.back.dto.PointRequest;
-import com.example.back.dto.RestaurantDto;
-import com.example.back.service.KakaoRestaurantService;
-import com.example.back.service.MultiMidpointService;
-import com.example.back.service.OdsayService;
+import com.ddmid.back.dto.MidpointCandidatesDto;
+import com.ddmid.back.dto.MidpointOptionDto;
+import com.ddmid.back.dto.MidpointResultDto;
+import com.ddmid.back.dto.MultiMidpointResultDto;
+import com.ddmid.back.dto.PointRequest;
+import com.ddmid.back.dto.RestaurantDto;
+import com.ddmid.back.service.KakaoRestaurantService;
+import com.ddmid.back.service.MultiMidpointService;
+import com.ddmid.back.service.OdsayService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;

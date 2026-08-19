@@ -1,4 +1,4 @@
-package com.example.back.dto;
+package com.ddmid.back.dto;
 
 import java.util.List;
 

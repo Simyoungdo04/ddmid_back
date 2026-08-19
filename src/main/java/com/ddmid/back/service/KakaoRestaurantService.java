@@ -1,7 +1,7 @@
-package com.example.back.service;
+package com.ddmid.back.service;
 
-import com.example.back.dto.NearbyStationDto;
-import com.example.back.dto.RestaurantDto;
+import com.ddmid.back.dto.NearbyStationDto;
+import com.ddmid.back.dto.RestaurantDto;
 import tools.jackson.databind.JsonNode;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -17,8 +17,12 @@ public class KakaoRestaurantService {
 	private static final String KEYWORD_SEARCH_URL = "https://dapi.kakao.com/v2/local/search/keyword.json";
 	private static final String FOOD_CATEGORY_GROUP_CODE = "FD6";
 	private static final String SUBWAY_CATEGORY_GROUP_CODE = "SW8";
-	private static final int SEARCH_RADIUS_METERS = 1000;
+	private static final int NAME_SEARCH_RADIUS_METERS = 1500;
 	private static final int SUBWAY_SEARCH_RADIUS_METERS = 10000;
+	// 중간지점 주변에 식당이 없으면 반경을 500m씩 넓혀가며 재시도하고, 3km까지도 없으면 포기한다.
+	private static final int NEARBY_SEARCH_INITIAL_RADIUS_METERS = 1000;
+	private static final int NEARBY_SEARCH_RADIUS_STEP_METERS = 500;
+	private static final int NEARBY_SEARCH_MAX_RADIUS_METERS = 3000;
 	private static final int CATEGORY_RESULT_SIZE = 5;
 	private static final int KEYWORD_RESULT_SIZE = 3;
 
@@ -36,13 +40,29 @@ public class KakaoRestaurantService {
 				.build();
 	}
 
+	/**
+	 * 중간지점 주변 식당을 찾는다. 처음엔 1km 반경으로 찾고, 결과가 없으면 500m씩 반경을
+	 * 넓혀가며 재시도한다. 3km까지 넓혀도 없으면 빈 리스트를 반환한다(=주변에 식당 없음).
+	 */
 	public List<RestaurantDto> findNearbyRestaurants(double x, double y) {
+		for (int radius = NEARBY_SEARCH_INITIAL_RADIUS_METERS;
+				radius <= NEARBY_SEARCH_MAX_RADIUS_METERS;
+				radius += NEARBY_SEARCH_RADIUS_STEP_METERS) {
+			List<RestaurantDto> restaurants = findNearbyRestaurants(x, y, radius);
+			if (!restaurants.isEmpty()) {
+				return restaurants;
+			}
+		}
+		return new ArrayList<>();
+	}
+
+	private List<RestaurantDto> findNearbyRestaurants(double x, double y, int radiusMeters) {
 		JsonNode response = categoryClient.get()
 				.uri(uriBuilder -> uriBuilder
 						.queryParam("category_group_code", FOOD_CATEGORY_GROUP_CODE)
 						.queryParam("x", x)
 						.queryParam("y", y)
-						.queryParam("radius", SEARCH_RADIUS_METERS)
+						.queryParam("radius", radiusMeters)
 						.queryParam("sort", "accuracy")
 						.queryParam("size", CATEGORY_RESULT_SIZE)
 						.build())
@@ -62,7 +82,7 @@ public class KakaoRestaurantService {
 						.queryParam("query", query)
 						.queryParam("x", x)
 						.queryParam("y", y)
-						.queryParam("radius", SEARCH_RADIUS_METERS)
+						.queryParam("radius", NAME_SEARCH_RADIUS_METERS)
 						.queryParam("sort", "accuracy")
 						.queryParam("size", KEYWORD_RESULT_SIZE)
 						.build())

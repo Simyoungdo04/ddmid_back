@@ -1,7 +1,7 @@
-package com.example.back.service;
+package com.ddmid.back.service;
 
-import com.example.back.dto.MidpointCandidatesDto;
-import com.example.back.dto.MidpointStationDto;
+import com.ddmid.back.dto.MidpointCandidatesDto;
+import com.ddmid.back.dto.MidpointStationDto;
 import tools.jackson.databind.JsonNode;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -9,6 +9,7 @@ import org.springframework.web.client.RestClient;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class OdsayService {
@@ -21,6 +22,8 @@ public class OdsayService {
 	private static final String WALK_OPTION_NAME = "도보 중간지점";
 	private static final double WALK_SPEED_METERS_PER_MINUTE = 67.0; // 시속 4km 기준
 	private static final double STRAIGHT_LINE_TO_ROAD_FACTOR = 1.3; // 직선거리를 실제 도보 경로 거리로 보정
+	// ODsay 에러코드: 3/4/5=출발·도착지 정류장 없음, 6=서비스 지역 아님, -99=검색결과 없음
+	private static final Set<String> NO_ROUTE_ERROR_CODES = Set.of("3", "4", "5", "6", "-99");
 
 	private final RestClient restClient;
 	private final String apiKey;
@@ -68,7 +71,16 @@ public class OdsayService {
 		if (response.has("error")) {
 			JsonNode errorNode = response.path("error");
 			JsonNode firstError = errorNode.isArray() ? errorNode.path(0) : errorNode;
-			String message = firstError.path("message").asText("경로를 찾을 수 없습니다.");
+			String code = firstError.path("code").asText("");
+
+			// 3/4/5/6=출발·도착지 정류장 없음, -99=검색결과 없음 -> 대중교통으로 이어지지 않는
+			// 지점이라는 뜻이라, 바다처럼 사람이 이동할 수 없는 구간일 가능성이 높다.
+			if (NO_ROUTE_ERROR_CODES.contains(code)) {
+				throw new IllegalStateException("사람이 이동할 수 없는 구간(바다 등)이 포함되어 있어 경로를 탐색할 수 없습니다.");
+			}
+
+			// ODsay는 에러 형태에 따라 메시지 필드명이 message/msg로 다르게 온다.
+			String message = firstError.path("message").asText(firstError.path("msg").asText("경로를 찾을 수 없습니다."));
 			throw new IllegalStateException(message);
 		}
 		return response;
@@ -89,7 +101,8 @@ public class OdsayService {
 
 		JsonNode paths = response.path("result").path("path");
 		if (!paths.isArray() || paths.isEmpty()) {
-			throw new IllegalStateException("두 지점을 잇는 대중교통 경로를 찾지 못했습니다.");
+			// 대중교통 경로 자체가 없다는 건 바다처럼 사람이 이동할 수 없는 구간일 가능성이 높다.
+			throw new IllegalStateException("사람이 이동할 수 없는 구간(바다 등)이 포함되어 있어 경로를 탐색할 수 없습니다.");
 		}
 
 		double midLat = (ay + by) / 2.0;

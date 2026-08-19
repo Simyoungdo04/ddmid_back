@@ -1,7 +1,7 @@
-package com.example.back.controller;
+package com.ddmid.back.controller;
 
-import com.example.back.dto.RestaurantDto;
-import com.example.back.service.KakaoRestaurantService;
+import com.ddmid.back.dto.RestaurantDto;
+import com.ddmid.back.service.KakaoRestaurantService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
