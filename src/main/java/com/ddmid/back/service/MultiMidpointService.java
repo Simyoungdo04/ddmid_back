@@ -89,11 +89,14 @@ public class MultiMidpointService {
 		if (transitStation == null) {
 			// 후보역까지 대중교통 경로 조회가 전부 실패하면(예: 근처에 지하철역이 없음)
 			// 도보 중간지점과 같은 좌표를 쓰되, "대중교통"이라고 오해하지 않도록 이름은 다르게 표시한다.
+			// 대중교통 경로 자체가 없으니 "타는 역까지의 도보 구간"이라는 개념도 없다.
 			transitStation = new MultiMidpointStationDto(
 					NO_TRANSIT_CANDIDATE_NAME, walkStation.lat(), walkStation.lng(),
 					walkStation.timesFromEachMinutes(), walkStation.maxTimeMinutes(), walkStation.routesFromEach(),
-					List.of()
+					List.of(), List.of(), List.of(), List.of(), List.of()
 			);
+		} else {
+			transitStation = withWalkLegs(points, transitStation);
 		}
 
 		List<RestaurantDto> walkRestaurants =
@@ -170,7 +173,10 @@ public class MultiMidpointService {
 			int max = Collections.max(times);
 			if (max < bestMax) {
 				bestMax = max;
-				best = new MultiMidpointStationDto(candidate.name(), candidate.lat(), candidate.lng(), times, max, routes, List.of());
+				best = new MultiMidpointStationDto(
+						candidate.name(), candidate.lat(), candidate.lng(), times, max, routes,
+						List.of(), List.of(), List.of(), List.of(), List.of()
+				);
 			}
 		}
 
@@ -213,11 +219,78 @@ public class MultiMidpointService {
 			int max = Collections.max(times);
 			if (max < bestMax) {
 				bestMax = max;
-				best = new MultiMidpointStationDto(candidate.name(), candidate.lat(), candidate.lng(), times, max, routes, summaries);
+				// 도보 구간(출발지->타는 역, 내리는 역->중간지점)은 여기서 채우지 않는다. 후보 3곳
+				// 전부에 대해 Tmap을 또 호출하면 낭비이므로, 최종 선택된 후보에 대해서만
+				// withWalkLegs()에서 한 번 채운다.
+				best = new MultiMidpointStationDto(
+						candidate.name(), candidate.lat(), candidate.lng(), times, max, routes, summaries,
+						List.of(), List.of(), List.of(), List.of()
+				);
 			}
 		}
 
 		return best;
+	}
+
+	/**
+	 * 카카오 대중교통 경로는 "실제로 타는 역/정류장"부터 "실제로 내리는 역/정류장"까지만 준다.
+	 * 참여자 출발지점 -> 타는 역, 내리는 역 -> 중간지점(목적지 좌표) 두 구간은 안 준다 — 직접
+	 * curl로 확인해보니 경로의 첫/마지막 좌표가 우리가 요청한 출발/도착 좌표와 실제로 다르다
+	 * (카카오가 가까운 역/정류장으로 스냅한다). 그래서 대중교통 후보로 선택된 지점에 대해, 참여자별
+	 * 경로의 첫/마지막 좌표를 기준으로 이 두 구간을 Tmap으로 따로 조회해서 덧붙인다. 참여자가 그
+	 * 역 바로 앞에서 출발/도착했으면(110m 이내) TmapService가 이미 0분으로 처리해준다. 후보
+	 * 선택(pickBestTransitCandidate) 자체에는 영향을 주지 않는다 — 최종 후보 하나에 대해서만
+	 * 추가로 조회한다.
+	 */
+	private MultiMidpointStationDto withWalkLegs(List<PointRequest> points, MultiMidpointStationDto transitStation) {
+		List<Integer> walkToStationTimes = new ArrayList<>();
+		List<List<RoutePointDto>> walkToStationRoutes = new ArrayList<>();
+		List<Integer> walkFromStationTimes = new ArrayList<>();
+		List<List<RoutePointDto>> walkFromStationRoutes = new ArrayList<>();
+		List<List<RoutePointDto>> routes = transitStation.routesFromEach();
+
+		for (int i = 0; i < points.size(); i++) {
+			PointRequest point = points.get(i);
+			List<RoutePointDto> route = routes.get(i);
+			if (route.isEmpty()) {
+				walkToStationTimes.add(0);
+				walkToStationRoutes.add(List.of());
+				walkFromStationTimes.add(0);
+				walkFromStationRoutes.add(List.of());
+				continue;
+			}
+
+			RoutePointDto boardingPoint = route.get(0);
+			addWalkLeg(point.x(), point.y(), boardingPoint.lng(), boardingPoint.lat(), walkToStationTimes, walkToStationRoutes);
+
+			RoutePointDto alightingPoint = route.get(route.size() - 1);
+			addWalkLeg(
+					alightingPoint.lng(), alightingPoint.lat(), transitStation.lng(), transitStation.lat(),
+					walkFromStationTimes, walkFromStationRoutes
+			);
+		}
+
+		return new MultiMidpointStationDto(
+				transitStation.name(), transitStation.lat(), transitStation.lng(),
+				transitStation.timesFromEachMinutes(), transitStation.maxTimeMinutes(), transitStation.routesFromEach(),
+				transitStation.transitSummariesFromEach(),
+				walkToStationTimes, walkToStationRoutes, walkFromStationTimes, walkFromStationRoutes
+		);
+	}
+
+	private void addWalkLeg(
+			double startX, double startY, double endX, double endY,
+			List<Integer> times, List<List<RoutePointDto>> routes
+	) {
+		try {
+			TmapRouteDto walkRoute = tmapService.getPedestrianRoute(startX, startY, endX, endY);
+			times.add(walkRoute.timeMinutes());
+			routes.add(walkRoute.points());
+		} catch (NoRouteFoundException e) {
+			// 이 구간은 도보 경로를 못 찾았다 -> 도보 구간 정보 없이 대중교통 시간만 보여준다.
+			times.add(0);
+			routes.add(List.of());
+		}
 	}
 
 	/**
@@ -232,7 +305,8 @@ public class MultiMidpointService {
 			routes.add(List.of(new RoutePointDto(point.y(), point.x()), new RoutePointDto(centroidLat, centroidLng)));
 		}
 		return new MultiMidpointStationDto(
-				WALK_OPTION_NAME, centroidLat, centroidLng, walkTimes, Collections.max(walkTimes), routes, List.of()
+				WALK_OPTION_NAME, centroidLat, centroidLng, walkTimes, Collections.max(walkTimes), routes,
+				List.of(), List.of(), List.of(), List.of(), List.of()
 		);
 	}
 
