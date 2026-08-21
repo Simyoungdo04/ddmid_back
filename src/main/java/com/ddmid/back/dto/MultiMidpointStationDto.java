@@ -7,6 +7,8 @@ public record MultiMidpointStationDto(
 		double lat,
 		double lng,
 		List<Integer> timesFromEachMinutes,
-		int maxTimeMinutes
+		int maxTimeMinutes,
+		List<List<RoutePointDto>> routesFromEach,
+		List<String> transitSummariesFromEach
 ) {
 }

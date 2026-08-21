@@ -19,6 +19,8 @@ repositories {
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-cache'
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	// back/.env 파일을 자동으로 읽어서 Spring 프로퍼티로 넣어줌 (Spring Boot 4 전용 아티팩트)
 	implementation 'me.paulschwarz:springboot4-dotenv:5.1.0'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'

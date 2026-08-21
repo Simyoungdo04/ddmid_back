@@ -4,5 +4,11 @@ server:
 kakao:
   rest-api-key: ${KAKAO_REST_API_KEY}
 
-odsay:
-  api-key: ${ODSAY_API_KEY}
+tmap:
+  app-key: ${TMAP_APP_KEY}
+
+spring:
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
