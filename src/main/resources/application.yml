@@ -6,9 +6,3 @@ kakao:
 
 tmap:
   app-key: ${TMAP_APP_KEY}
-
-spring:
-  data:
-    redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}

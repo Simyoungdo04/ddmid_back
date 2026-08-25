@@ -4,7 +4,6 @@ import com.ddmid.back.dto.NearbyStationDto;
 import com.ddmid.back.dto.RestaurantDto;
 import tools.jackson.databind.JsonNode;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
@@ -44,15 +43,7 @@ public class KakaoRestaurantService {
 	/**
 	 * 중간지점 주변 식당을 찾는다. 처음엔 1km 반경으로 찾고, 결과가 없으면 500m씩 반경을
 	 * 넓혀가며 재시도한다. 3km까지 넓혀도 없으면 빈 리스트를 반환한다(=주변에 식당 없음).
-	 *
-	 * 중간지점 좌표는 참여자 좌표 평균이라 요청마다 미세하게 달라질 수 있어서, 좌표를
-	 * 그대로 캐시 키로 쓰면 거의 항상 캐시 미스가 난다. 소수 4자리(~11m)로 반올림한
-	 * 값을 키로 써서 사실상 같은 위치면 캐시가 맞도록 한다.
 	 */
-	@Cacheable(
-			cacheNames = "nearbyRestaurants",
-			key = "T(java.lang.Math).round(#x * 10000) + '_' + T(java.lang.Math).round(#y * 10000)"
-	)
 	public List<RestaurantDto> findNearbyRestaurants(double x, double y) {
 		for (int radius = NEARBY_SEARCH_INITIAL_RADIUS_METERS;
 				radius <= NEARBY_SEARCH_MAX_RADIUS_METERS;
