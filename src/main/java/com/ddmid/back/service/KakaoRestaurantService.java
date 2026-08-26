@@ -1,6 +1,5 @@
 package com.ddmid.back.service;
 
-import com.ddmid.back.dto.NearbyStationDto;
 import com.ddmid.back.dto.RestaurantDto;
 import tools.jackson.databind.JsonNode;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,15 +9,15 @@ import org.springframework.web.client.RestClient;
 import java.util.ArrayList;
 import java.util.List;
 
+// 식당/장소 검색만 담당한다. 지하철역 검색은 KakaoStationService가 따로 맡는다 - 같은
+// 카카오 로컬 API를 쓰지만 목적(식당 추천 vs 중간지점 후보)이 달라서 분리했다.
 @Service
 public class KakaoRestaurantService {
 
 	private static final String CATEGORY_SEARCH_URL = "https://dapi.kakao.com/v2/local/search/category.json";
 	private static final String KEYWORD_SEARCH_URL = "https://dapi.kakao.com/v2/local/search/keyword.json";
 	private static final String FOOD_CATEGORY_GROUP_CODE = "FD6";
-	private static final String SUBWAY_CATEGORY_GROUP_CODE = "SW8";
 	private static final int NAME_SEARCH_RADIUS_METERS = 1500;
-	private static final int SUBWAY_SEARCH_RADIUS_METERS = 10000;
 	// 중간지점 주변에 식당이 없으면 반경을 500m씩 넓혀가며 재시도하고, 3km까지도 없으면 포기한다.
 	private static final int NEARBY_SEARCH_INITIAL_RADIUS_METERS = 1000;
 	private static final int NEARBY_SEARCH_RADIUS_STEP_METERS = 500;
@@ -93,33 +92,20 @@ public class KakaoRestaurantService {
 	}
 
 	/**
-	 * 특정 좌표(예: N명 좌표의 중심점) 근처 지하철역을 가까운 순으로 최대 count개 찾는다.
+	 * 기준 좌표 없이 이름만으로 장소를 검색한다. 방 만들기/입장 시 "출발지 검색"처럼 아직
+	 * 중심이 될 좌표가 없는 상황에 쓴다.
 	 */
-	public List<NearbyStationDto> findNearbySubwayStations(double x, double y, int count) {
-		JsonNode response = categoryClient.get()
+	public List<RestaurantDto> searchPlaces(String query) {
+		JsonNode response = keywordClient.get()
 				.uri(uriBuilder -> uriBuilder
-						.queryParam("category_group_code", SUBWAY_CATEGORY_GROUP_CODE)
-						.queryParam("x", x)
-						.queryParam("y", y)
-						.queryParam("radius", SUBWAY_SEARCH_RADIUS_METERS)
-						.queryParam("sort", "distance")
-						.queryParam("size", count)
+						.queryParam("query", query)
+						.queryParam("sort", "accuracy")
+						.queryParam("size", KEYWORD_RESULT_SIZE)
 						.build())
 				.retrieve()
 				.body(JsonNode.class);
 
-		List<NearbyStationDto> stations = new ArrayList<>();
-		if (response == null) {
-			return stations;
-		}
-		for (JsonNode doc : response.path("documents")) {
-			stations.add(new NearbyStationDto(
-					doc.path("place_name").asText(),
-					doc.path("y").asDouble(),
-					doc.path("x").asDouble()
-			));
-		}
-		return stations;
+		return toRestaurantList(response);
 	}
 
 	private List<RestaurantDto> toRestaurantList(JsonNode response) {

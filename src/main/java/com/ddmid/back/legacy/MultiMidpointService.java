@@ -1,14 +1,15 @@
-package com.ddmid.back.service;
+package com.ddmid.back.legacy;
 
-import com.ddmid.back.dto.MultiMidpointOptionDto;
-import com.ddmid.back.dto.MultiMidpointResultDto;
-import com.ddmid.back.dto.MultiMidpointStationDto;
 import com.ddmid.back.dto.NearbyStationDto;
-import com.ddmid.back.dto.PointRequest;
 import com.ddmid.back.dto.RestaurantDto;
 import com.ddmid.back.dto.RoutePointDto;
 import com.ddmid.back.dto.TmapRouteDto;
 import com.ddmid.back.dto.TransitRouteDto;
+import com.ddmid.back.service.KakaoRestaurantService;
+import com.ddmid.back.service.KakaoStationService;
+import com.ddmid.back.service.KakaoTransitService;
+import com.ddmid.back.service.NoRouteFoundException;
+import com.ddmid.back.service.TmapService;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -48,13 +49,16 @@ public class MultiMidpointService {
 	private static final double EARTH_RADIUS_METERS = 6371000;
 
 	private final KakaoRestaurantService kakaoRestaurantService;
+	private final KakaoStationService kakaoStationService;
 	private final TmapService tmapService;
 	private final KakaoTransitService kakaoTransitService;
 
 	public MultiMidpointService(
-			KakaoRestaurantService kakaoRestaurantService, TmapService tmapService, KakaoTransitService kakaoTransitService
+			KakaoRestaurantService kakaoRestaurantService, KakaoStationService kakaoStationService,
+			TmapService tmapService, KakaoTransitService kakaoTransitService
 	) {
 		this.kakaoRestaurantService = kakaoRestaurantService;
+		this.kakaoStationService = kakaoStationService;
 		this.tmapService = tmapService;
 		this.kakaoTransitService = kakaoTransitService;
 	}
@@ -66,11 +70,11 @@ public class MultiMidpointService {
 
 		assertAllPointsReachable(points);
 
-		double centroidLat = points.stream().mapToDouble(PointRequest::y).average().orElseThrow();
-		double centroidLng = points.stream().mapToDouble(PointRequest::x).average().orElseThrow();
+		Double centroidLat = points.stream().mapToDouble(PointRequest::y).average().orElseThrow();
+		Double centroidLng = points.stream().mapToDouble(PointRequest::x).average().orElseThrow();
 
 		List<NearbyStationDto> candidates =
-				kakaoRestaurantService.findNearbySubwayStations(centroidLng, centroidLat, CANDIDATE_STATION_COUNT);
+				kakaoStationService.findNearbySubwayStations(centroidLng, centroidLat, CANDIDATE_STATION_COUNT);
 
 		// 도보는 후보역 3곳 외에 중심점(좌표 평균) 자체도 후보로 함께 경쟁시킨다. 참여자들이
 		// 가까이 몰려있을 때는 역까지 가는 것보다 그냥 중심점 근처에서 만나는 게 더 공평한
@@ -297,7 +301,7 @@ public class MultiMidpointService {
 	 * 후보역까지 도보로 갈 수 있는 경로를 Tmap이 하나도 찾지 못했을 때만 쓰는 마지막 대안.
 	 * 좌표 평균(직선거리) 기준 추정치이며, 경로는 참여자-중심점을 잇는 직선 2점으로만 표시한다.
 	 */
-	private MultiMidpointStationDto buildWalkFallback(List<PointRequest> points, double centroidLat, double centroidLng) {
+	private MultiMidpointStationDto buildWalkFallback(List<PointRequest> points, Double centroidLat, Double centroidLng) {
 		List<Integer> walkTimes = new ArrayList<>();
 		List<List<RoutePointDto>> routes = new ArrayList<>();
 		for (PointRequest point : points) {

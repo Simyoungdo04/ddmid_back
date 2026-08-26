@@ -1,11 +1,13 @@
-package com.ddmid.back.dto;
+package com.ddmid.back.legacy;
+
+import com.ddmid.back.dto.RoutePointDto;
 
 import java.util.List;
 
 public record MultiMidpointStationDto(
 		String name,
-		double lat,
-		double lng,
+		Double lat,
+		Double lng,
 		List<Integer> timesFromEachMinutes,
 		int maxTimeMinutes,
 		List<List<RoutePointDto>> routesFromEach,

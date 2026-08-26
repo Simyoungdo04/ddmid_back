@@ -1,4 +1,4 @@
-package com.ddmid.back.dto;
+package com.ddmid.back.legacy;
 
 public record MultiMidpointResultDto(
 		MultiMidpointOptionDto walk,

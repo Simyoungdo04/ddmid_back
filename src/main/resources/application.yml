@@ -1,8 +1,8 @@
 server:
   port: 8080
 
-kakao:
-  rest-api-key: ${KAKAO_REST_API_KEY}
-
-tmap:
-  app-key: ${TMAP_APP_KEY}
+spring:
+  config:
+    import:
+      - application-kakao.yml
+      - application-tmap.yml

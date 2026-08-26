@@ -8,8 +8,8 @@ public record RestaurantDto(
 		String roadAddress,
 		String phone,
 		String placeUrl,
-		double lat,
-		double lng,
+		Double lat,
+		Double lng,
 		int distanceMeters
 ) {
 }

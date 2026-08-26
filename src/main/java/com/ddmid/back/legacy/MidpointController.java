@@ -1,8 +1,5 @@
-package com.ddmid.back.controller;
+package com.ddmid.back.legacy;
 
-import com.ddmid.back.dto.MultiMidpointResultDto;
-import com.ddmid.back.dto.PointRequest;
-import com.ddmid.back.service.MultiMidpointService;
 import com.ddmid.back.service.NoRouteFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

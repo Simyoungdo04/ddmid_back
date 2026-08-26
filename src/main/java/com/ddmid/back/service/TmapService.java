@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 
 import java.util.ArrayList;
@@ -72,6 +73,11 @@ public class TmapService {
 			// 키/쿼터/네트워크 등 다른 문제일 가능성이 높다. NoRouteFoundException으로
 			// 뭉뚱그리지 않고 그대로 던진다.
 			throw new IllegalStateException("Tmap 요청 실패(status=" + e.getStatusCode().value() + ")");
+		} catch (RestClientException e) {
+			// 타임아웃/연결 끊김 등 상태코드 없는 네트워크 오류. 이걸 그대로 던지면 이 참여자
+			// 한 명 때문에 resolve() 전체가 500으로 죽어서 방이 RESOLVING에 멈춰버린다 -
+			// IllegalStateException으로 감싸서 RoomService가 "이 구간만 실패"로 처리하게 한다.
+			throw new IllegalStateException("Tmap 요청 실패: " + e.getMessage(), e);
 		}
 
 		return parseRoute(response);

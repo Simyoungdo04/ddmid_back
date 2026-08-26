@@ -28,4 +28,9 @@ public class RestaurantController {
 	) {
 		return kakaoRestaurantService.searchByName(query, x, y);
 	}
+
+	@GetMapping("/api/places/search")
+	public List<RestaurantDto> searchPlaces(@RequestParam String query) {
+		return kakaoRestaurantService.searchPlaces(query);
+	}
 }
