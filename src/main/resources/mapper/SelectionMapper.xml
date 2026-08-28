@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kh.midpoint.selection.model.dao.SelectionMapper">
+
+	<resultMap id="restaurantDtoResultMap" type="com.kh.midpoint.restaurant.model.dto.RestaurantDto">
+		<constructor>
+			<arg column="ID" javaType="string"/>
+			<arg column="NAME" javaType="string"/>
+			<arg column="CATEGORY" javaType="string"/>
+			<arg column="ADDRESS" javaType="string"/>
+			<arg column="ROAD_ADDRESS" javaType="string"/>
+			<arg column="PHONE" javaType="string"/>
+			<arg column="PLACE_URL" javaType="string"/>
+			<arg column="LAT" javaType="double"/>
+			<arg column="LNG" javaType="double"/>
+			<arg column="DISTANCE_METERS" javaType="_int"/>
+		</constructor>
+	</resultMap>
+
+	<select id="nextSelectionId" resultType="long">
+		SELECT SEQ_SELECTION.NEXTVAL FROM DUAL
+	</select>
+
+	<insert id="insert" parameterType="com.kh.midpoint.selection.model.vo.Selection">
+		INSERT INTO SELECTION (SELECTION_ID, PARTICIPANT_ID, RESTAURANT_ID)
+		VALUES (#{selectionId}, #{participantId}, #{restaurantId})
+	</insert>
+
+	<delete id="deleteByParticipantId">
+		DELETE FROM SELECTION WHERE PARTICIPANT_ID = #{participantId}
+	</delete>
+
+	<delete id="deleteByRoomId">
+		DELETE FROM SELECTION WHERE PARTICIPANT_ID IN (
+			SELECT PARTICIPANT_ID FROM PARTICIPANT WHERE ROOM_ID = #{roomId}
+		)
+	</delete>
+
+	<select id="findChosenRestaurantByParticipantId" resultMap="restaurantDtoResultMap">
+		SELECT
+			TO_CHAR(r.KAKAO_PLACE_ID) AS ID, r.NAME, r.CATEGORY, r.ADDRESS, r.ROAD_ADDRESS,
+			r.PHONE, r.PLACE_URL, r.LAT, r.LNG, 0 AS DISTANCE_METERS
+		FROM SELECTION s
+		JOIN RESTAURANT r ON r.RESTAURANT_ID = s.RESTAURANT_ID
+		WHERE s.PARTICIPANT_ID = #{participantId}
+	</select>
+
+</mapper>

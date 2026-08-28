@@ -2,9 +2,7 @@
 build/
 !gradle/wrapper/gradle-wrapper.jar
 .env
-src/main/resources/application-kakao.yml
-src/main/resources/application-tmap.yml
-src/main/resources/application-private.yml
+src/main/resources/application-local.yml
 *.iml
 .idea/
 .project

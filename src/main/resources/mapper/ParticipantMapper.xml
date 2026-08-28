@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kh.midpoint.participant.model.dao.ParticipantMapper">
+
+	<resultMap id="participantResultMap" type="com.kh.midpoint.participant.model.dto.ParticipantDto">
+		<id property="participantId" column="PARTICIPANT_ID"/>
+		<id property="roomId" column="ROOM_ID"/>
+		<result property="nickname" column="NICKNAME"/>
+		<result property="isHost" column="IS_HOST"/>
+		<result property="isReady" column="IS_READY"/>
+		<result property="prefLat" column="PREF_LAT"/>
+		<result property="prefLng" column="PREF_LNG"/>
+		<result property="joinedAt" column="JOINED_AT"/>
+		<result property="leftAt" column="LEFT_AT"/>
+	</resultMap>
+
+	<select id="nextParticipantId" resultType="long">
+		SELECT SEQ_PARTICIPANT.NEXTVAL FROM DUAL
+	</select>
+
+	<insert id="insert" parameterType="com.kh.midpoint.participant.model.vo.Participant">
+		INSERT INTO PARTICIPANT (
+			PARTICIPANT_ID, ROOM_ID, NICKNAME, IS_HOST, IS_READY, PREF_LAT, PREF_LNG, JOINED_AT
+		) VALUES (
+			#{participantId}, #{roomId}, #{nickname}, #{isHost}, #{isReady}, #{prefLat}, #{prefLng}, #{joinedAt}
+		)
+	</insert>
+
+	<select id="findActiveByRoomId" resultMap="participantResultMap">
+		SELECT * FROM PARTICIPANT WHERE ROOM_ID = #{roomId} AND LEFT_AT IS NULL ORDER BY JOINED_AT
+	</select>
+
+	<select id="findActiveByRoomIdAndNickname" resultMap="participantResultMap">
+		SELECT * FROM PARTICIPANT
+		WHERE ROOM_ID = #{roomId} AND LEFT_AT IS NULL AND LOWER(NICKNAME) = LOWER(#{nickname})
+	</select>
+
+	<select id="findByRoomIdAndParticipantId" resultMap="participantResultMap">
+		SELECT * FROM PARTICIPANT WHERE ROOM_ID = #{roomId} AND PARTICIPANT_ID = #{participantId}
+	</select>
+
+	<update id="markLeft">
+		UPDATE PARTICIPANT SET LEFT_AT = #{leftAt} WHERE ROOM_ID = #{roomId} AND PARTICIPANT_ID = #{participantId}
+	</update>
+
+	<update id="updateIsHost">
+		UPDATE PARTICIPANT SET IS_HOST = #{isHost} WHERE ROOM_ID = #{roomId} AND PARTICIPANT_ID = #{participantId}
+	</update>
+
+	<update id="updateLocation">
+		UPDATE PARTICIPANT SET PREF_LAT = #{lat}, PREF_LNG = #{lng}
+		WHERE ROOM_ID = #{roomId} AND PARTICIPANT_ID = #{participantId}
+	</update>
+
+	<delete id="deleteByRoomId">
+		DELETE FROM PARTICIPANT WHERE ROOM_ID = #{roomId}
+	</delete>
+
+</mapper>

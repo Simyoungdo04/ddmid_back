@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kh.midpoint.room.model.dao.RoomMapper">
+
+	<resultMap id="roomResultMap" type="com.kh.midpoint.room.model.dto.RoomDto">
+		<id property="roomId" column="ROOM_ID"/>
+		<result property="roomUuid" column="ROOM_UUID"/>
+		<result property="maxParticipants" column="MAX_PARTICIPANTS"/>
+		<result property="midpointLat" column="MIDPOINT_LAT"/>
+		<result property="midpointLng" column="MIDPOINT_LNG"/>
+		<result property="midpointSource" column="MIDPOINT_SOURCE"/>
+		<result property="mode" column="TRAVEL_MODE"/>
+		<result property="stage" column="STAGE"/>
+		<result property="createdAt" column="CREATED_AT"/>
+		<result property="expiresAt" column="EXPIRES_AT"/>
+	</resultMap>
+
+	<select id="nextRoomId" resultType="long">
+		SELECT SEQ_ROOM.NEXTVAL FROM DUAL
+	</select>
+
+	<insert id="insert" parameterType="com.kh.midpoint.room.model.vo.Room">
+		INSERT INTO ROOM (ROOM_ID, ROOM_UUID, MAX_PARTICIPANTS, STAGE, CREATED_AT, EXPIRES_AT)
+		VALUES (#{roomId}, #{roomUuid}, #{maxParticipants}, #{stage}, #{createdAt}, #{expiresAt})
+	</insert>
+
+	<select id="findByUuid" resultMap="roomResultMap">
+		SELECT * FROM ROOM WHERE ROOM_UUID = #{roomUuid}
+	</select>
+
+	<update id="updateMode">
+		UPDATE ROOM SET TRAVEL_MODE = #{mode}, STAGE = #{stage} WHERE ROOM_ID = #{roomId}
+	</update>
+
+	<update id="updateMidpoint">
+		UPDATE ROOM
+		SET MIDPOINT_LAT = #{midpointLat}, MIDPOINT_LNG = #{midpointLng},
+			MIDPOINT_SOURCE = #{midpointSource}, STAGE = #{stage}
+		WHERE ROOM_ID = #{roomId}
+	</update>
+
+	<update id="updateStage">
+		UPDATE ROOM SET STAGE = #{stage} WHERE ROOM_ID = #{roomId}
+	</update>
+
+	<select id="findExpiredRoomIds" resultType="long">
+		SELECT ROOM_ID FROM ROOM WHERE EXPIRES_AT IS NOT NULL AND EXPIRES_AT &lt; #{now}
+	</select>
+
+	<delete id="deleteById">
+		DELETE FROM ROOM WHERE ROOM_ID = #{roomId}
+	</delete>
+
+</mapper>

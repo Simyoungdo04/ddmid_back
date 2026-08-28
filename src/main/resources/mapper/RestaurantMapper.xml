@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kh.midpoint.restaurant.model.dao.RestaurantMapper">
+
+	<resultMap id="restaurantRowResultMap" type="com.kh.midpoint.restaurant.model.dto.RestaurantRowDto">
+		<id property="restaurantId" column="RESTAURANT_ID"/>
+		<id property="roomId" column="ROOM_ID"/>
+		<result property="kakaoPlaceId" column="KAKAO_PLACE_ID"/>
+		<result property="name" column="NAME"/>
+		<result property="category" column="CATEGORY"/>
+		<result property="address" column="ADDRESS"/>
+		<result property="roadAddress" column="ROAD_ADDRESS"/>
+		<result property="phone" column="PHONE"/>
+		<result property="placeUrl" column="PLACE_URL"/>
+		<result property="lat" column="LAT"/>
+		<result property="lng" column="LNG"/>
+		<result property="source" column="SOURCE"/>
+		<result property="addedBy" column="ADDED_BY"/>
+		<result property="createdAt" column="CREATED_AT"/>
+	</resultMap>
+
+	<select id="nextRestaurantId" resultType="long">
+		SELECT SEQ_RESTAURANT.NEXTVAL FROM DUAL
+	</select>
+
+	<insert id="insert" parameterType="com.kh.midpoint.restaurant.model.vo.Restaurant">
+		INSERT INTO RESTAURANT (
+			RESTAURANT_ID, ROOM_ID, KAKAO_PLACE_ID, NAME, CATEGORY, ADDRESS, ROAD_ADDRESS,
+			PHONE, PLACE_URL, LAT, LNG, SOURCE, ADDED_BY, CREATED_AT
+		) VALUES (
+			#{restaurantId}, #{roomId}, #{kakaoPlaceId}, #{name}, #{category}, #{address}, #{roadAddress},
+			#{phone,jdbcType=VARCHAR}, #{placeUrl}, #{lat}, #{lng}, #{source}, #{addedBy,jdbcType=VARCHAR}, #{createdAt}
+		)
+	</insert>
+
+	<select id="findByRoomIdAndKakaoPlaceId" resultMap="restaurantRowResultMap">
+		SELECT * FROM RESTAURANT WHERE ROOM_ID = #{roomId} AND KAKAO_PLACE_ID = #{kakaoPlaceId}
+	</select>
+
+	<delete id="deleteByRoomId">
+		DELETE FROM RESTAURANT WHERE ROOM_ID = #{roomId}
+	</delete>
+
+</mapper>

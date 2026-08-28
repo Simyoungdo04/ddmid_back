@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kh.midpoint.route.model.dao.ParticipantRouteMapper">
+
+	<resultMap id="routeResultMap" type="com.kh.midpoint.route.model.dto.ParticipantRouteDto">
+		<id property="routeId" column="ROUTE_ID"/>
+		<result property="participantId" column="PARTICIPANT_ID"/>
+		<result property="roomId" column="ROOM_ID"/>
+		<result property="mode" column="TRAVEL_MODE"/>
+		<result property="legOrder" column="LEG_ORDER"/>
+		<result property="legType" column="LEG_TYPE"/>
+		<result property="timeMinutes" column="TIME_MINUTES"/>
+		<result property="guidance" column="GUIDANCE"/>
+		<result property="vehicles" column="VEHICLES"/>
+	</resultMap>
+
+	<resultMap id="pointResultMap" type="com.kh.midpoint.external.tmap.RoutePointDto">
+		<constructor>
+			<arg column="LAT" javaType="double"/>
+			<arg column="LNG" javaType="double"/>
+		</constructor>
+	</resultMap>
+
+	<!-- PARTICIPANT_ROUTE_POINT.ROUTE_ID FK가 ON DELETE CASCADE라서, 구간만 지우면
+	     좌표는 Oracle이 알아서 같이 지운다(JDBC 드라이버는 세미콜론으로 여러 문장을
+	     한 번에 실행하는 걸 지원하지 않아서 DELETE 하나로 끝내야 한다). -->
+	<delete id="deleteByParticipantIdAndMode">
+		DELETE FROM PARTICIPANT_ROUTE WHERE PARTICIPANT_ID = #{participantId} AND TRAVEL_MODE = #{mode}
+	</delete>
+
+	<delete id="deleteByRoomId">
+		DELETE FROM PARTICIPANT_ROUTE WHERE ROOM_ID = #{roomId}
+	</delete>
+
+	<select id="nextRouteId" resultType="long">
+		SELECT SEQ_PARTICIPANT_ROUTE.NEXTVAL FROM DUAL
+	</select>
+
+	<insert id="insertLeg" parameterType="com.kh.midpoint.route.model.vo.ParticipantRoute">
+		INSERT INTO PARTICIPANT_ROUTE (
+			ROUTE_ID, PARTICIPANT_ID, ROOM_ID, TRAVEL_MODE, LEG_ORDER, LEG_TYPE, TIME_MINUTES, GUIDANCE, VEHICLES
+		) VALUES (
+			#{routeId}, #{participantId}, #{roomId}, #{mode}, #{legOrder}, #{legType}, #{timeMinutes},
+			#{guidance,jdbcType=VARCHAR}, #{vehicles,jdbcType=VARCHAR}
+		)
+	</insert>
+
+	<!-- Oracle은 SEQUENCE.NEXTVAL을 UNION ALL 안에서 쓰는 걸 막는다(ORA-02287) - 그래서
+	     좌표마다 평범한 단일 INSERT문을 만들고, 그걸 PL/SQL 블록(BEGIN...END)으로 묶어서
+	     JDBC 호출 한 번에 전부 실행한다(JDBC는 세미콜론으로 여러 문장을 한 번에 보내는 걸
+	     지원하지 않지만, PL/SQL 블록 자체는 통째로 문장 하나로 취급된다). -->
+	<insert id="insertPoints">
+		BEGIN
+		<foreach collection="points" item="point" index="idx">
+			INSERT INTO PARTICIPANT_ROUTE_POINT (POINT_ID, ROUTE_ID, POINT_ORDER, LAT, LNG)
+			VALUES (SEQ_PARTICIPANT_ROUTE_POINT.NEXTVAL, #{routeId}, #{idx}, #{point.lat}, #{point.lng});
+		</foreach>
+		END;
+	</insert>
+
+	<select id="findLegsByParticipantId" resultMap="routeResultMap">
+		SELECT * FROM PARTICIPANT_ROUTE WHERE PARTICIPANT_ID = #{participantId} ORDER BY LEG_ORDER
+	</select>
+
+	<select id="findPointsByRouteId" resultMap="pointResultMap">
+		SELECT LAT, LNG FROM PARTICIPANT_ROUTE_POINT WHERE ROUTE_ID = #{routeId} ORDER BY POINT_ORDER
+	</select>
+
+</mapper>
