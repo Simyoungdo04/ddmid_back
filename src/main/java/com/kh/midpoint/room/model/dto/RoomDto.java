@@ -7,7 +7,7 @@ import lombok.ToString;
 
 import java.time.LocalDateTime;
 
-// MIDPOINT_ROOM 테이블 한 행 조회 결과. TRAVEL_MODE/STAGE는 ERD에 없어서 이번에 추가한 컬럼
+// ROOM 테이블 한 행 조회 결과. TRAVEL_MODE/STAGE는 ERD에 없어서 이번에 추가한 컬럼
 // (docs/2026-08-26_작업자_DB-스키마-추가검토.md 참고) - 방 흐름 전체를 이 두 값으로 굴린다.
 @Getter
 @Setter
