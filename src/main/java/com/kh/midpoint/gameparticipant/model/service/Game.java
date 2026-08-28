@@ -62,7 +62,7 @@ public class Game {
 				.participantId(participantId)
 				.gameSessionId(gameSessionId)
 				.isWinner(winner ? "Y" : "N")
-				.playedAt(LocalDateTime.now())
+				.joinedAt(LocalDateTime.now())
 				.build();
 		gameParticipantMapper.insert(gameParticipant);
 		return gameParticipantId;

@@ -32,7 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-// 방(Room) 책임만 담당한다 - 방 단계 전환의 "순서"와, 여러 테이블(ROOM/PARTICIPANT/
+// 방(Room) 책임만 담당한다 - 방 단계 전환의 "순서"와, 여러 테이블(MIDPOINT_ROOM/PARTICIPANT/
 // SELECTION/ROOM_RESULT/PARTICIPANT_ROUTE)을 조합해서 화면에 내려줄 응답을 만드는 일을 한다.
 // 실제 중간지점 계산/경로 조회는 MidpointFinder/RouteFiller(지도 책임)에게, 만장일치가
 // 아닐 때 승자를 정하는 일은 Game(gameparticipant 책임)에게 맡긴다.

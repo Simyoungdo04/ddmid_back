@@ -37,7 +37,7 @@ public class MidpointFinder {
 	}
 
 	// point: 계산된 중간지점 좌표. source: 'STATION'(후보역 선택됨) | 'CENTER'(전부 도달
-	// 불가능해서 참여자 좌표 평균으로 대체됨) - ROOM.MIDPOINT_SOURCE에 그대로 저장된다.
+	// 불가능해서 참여자 좌표 평균으로 대체됨) - MIDPOINT_ROOM.MIDPOINT_SOURCE에 그대로 저장된다.
 	public record MidpointResult(NearbyStationDto point, String source) {
 	}
 

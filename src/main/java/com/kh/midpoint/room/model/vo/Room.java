@@ -5,7 +5,7 @@ import lombok.Value;
 
 import java.time.LocalDateTime;
 
-// ROOM 테이블 INSERT 전용 파라미터. 불변 - 값을 다 갖춘 뒤 빌더로 한 번에 만든다.
+// MIDPOINT_ROOM 테이블 INSERT 전용 파라미터. 불변 - 값을 다 갖춘 뒤 빌더로 한 번에 만든다.
 @Value
 @Builder
 public class Room {

@@ -14,5 +14,5 @@ public class GameParticipant {
 	Long roomId;
 	String gameSessionId;
 	String isWinner; // 'Y' / 'N'
-	LocalDateTime playedAt;
+	LocalDateTime joinedAt;
 }

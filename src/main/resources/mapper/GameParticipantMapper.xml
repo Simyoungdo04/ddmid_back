@@ -8,9 +8,9 @@
 
 	<insert id="insert" parameterType="com.kh.midpoint.gameparticipant.model.vo.GameParticipant">
 		INSERT INTO GAME_PARTICIPANT (
-			GAME_PARTICIPANT_ID, PARTICIPANT_ID, ROOM_ID, GAME_SESSION_ID, IS_WINNER, PLAYED_AT
+			GAME_PARTICIPANT_ID, PARTICIPANT_ID, ROOM_ID, GAME_SESSION_ID, IS_WINNER, JOINED_AT
 		) VALUES (
-			#{gameParticipantId}, #{participantId}, #{roomId}, #{gameSessionId}, #{isWinner}, #{playedAt}
+			#{gameParticipantId}, #{participantId}, #{roomId}, #{gameSessionId}, #{isWinner}, #{joinedAt}
 		)
 	</insert>
 

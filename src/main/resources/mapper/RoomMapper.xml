@@ -16,39 +16,39 @@
 	</resultMap>
 
 	<select id="nextRoomId" resultType="long">
-		SELECT SEQ_ROOM.NEXTVAL FROM DUAL
+		SELECT SEQ_MIDPOINT_ROOM.NEXTVAL FROM DUAL
 	</select>
 
 	<insert id="insert" parameterType="com.kh.midpoint.room.model.vo.Room">
-		INSERT INTO ROOM (ROOM_ID, ROOM_UUID, MAX_PARTICIPANTS, STAGE, CREATED_AT, EXPIRES_AT)
+		INSERT INTO MIDPOINT_ROOM (ROOM_ID, ROOM_UUID, MAX_PARTICIPANTS, STAGE, CREATED_AT, EXPIRES_AT)
 		VALUES (#{roomId}, #{roomUuid}, #{maxParticipants}, #{stage}, #{createdAt}, #{expiresAt})
 	</insert>
 
 	<select id="findByUuid" resultMap="roomResultMap">
-		SELECT * FROM ROOM WHERE ROOM_UUID = #{roomUuid}
+		SELECT * FROM MIDPOINT_ROOM WHERE ROOM_UUID = #{roomUuid}
 	</select>
 
 	<update id="updateMode">
-		UPDATE ROOM SET TRAVEL_MODE = #{mode}, STAGE = #{stage} WHERE ROOM_ID = #{roomId}
+		UPDATE MIDPOINT_ROOM SET TRAVEL_MODE = #{mode}, STAGE = #{stage} WHERE ROOM_ID = #{roomId}
 	</update>
 
 	<update id="updateMidpoint">
-		UPDATE ROOM
+		UPDATE MIDPOINT_ROOM
 		SET MIDPOINT_LAT = #{midpointLat}, MIDPOINT_LNG = #{midpointLng},
 			MIDPOINT_SOURCE = #{midpointSource}, STAGE = #{stage}
 		WHERE ROOM_ID = #{roomId}
 	</update>
 
 	<update id="updateStage">
-		UPDATE ROOM SET STAGE = #{stage} WHERE ROOM_ID = #{roomId}
+		UPDATE MIDPOINT_ROOM SET STAGE = #{stage} WHERE ROOM_ID = #{roomId}
 	</update>
 
 	<select id="findExpiredRoomIds" resultType="long">
-		SELECT ROOM_ID FROM ROOM WHERE EXPIRES_AT IS NOT NULL AND EXPIRES_AT &lt; #{now}
+		SELECT ROOM_ID FROM MIDPOINT_ROOM WHERE EXPIRES_AT IS NOT NULL AND EXPIRES_AT &lt; #{now}
 	</select>
 
 	<delete id="deleteById">
-		DELETE FROM ROOM WHERE ROOM_ID = #{roomId}
+		DELETE FROM MIDPOINT_ROOM WHERE ROOM_ID = #{roomId}
 	</delete>
 
 </mapper>

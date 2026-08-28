@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 // 방 하나와 그 밑에 딸린 데이터를 전부 지운다. SELECTION/GAME_PARTICIPANT/ROOM_RESULT/
-// PARTICIPANT_ROUTE는 ROOM에 DB FK 제약이 없어서(로직으로만 연결) 여기서
+// PARTICIPANT_ROUTE는 MIDPOINT_ROOM에 DB FK 제약이 없어서(로직으로만 연결) 여기서
 // 순서를 지켜가며 직접 지워야 한다 - PARTICIPANT/RESTAURANT는 FK가 있어서 방보다 먼저
 // 지워야 하고, PARTICIPANT_ROUTE_POINT는 PARTICIPANT_ROUTE의 ON DELETE CASCADE로 같이 지워진다.
 @Service
