@@ -3,6 +3,7 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 .env
 src/main/resources/application-local.yml
+*.yml
 *.iml
 .idea/
 .project
